@@ -1,0 +1,113 @@
+/**
+ * Basic Layout Styles
+ */
+body { 
+    font-size: 62.5%;
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+/**
+ * Header Styles
+ */
+#userbar {
+    position:absolute;
+    top:0;
+    right:0;
+}
+
+#gridContainer {
+    margin-top: 10px;
+}
+
+/**
+ * Content Styles
+ */
+table.cashflow {
+    border: 1px solid #ccc;
+}
+
+table.cashflow tr:nth-child(odd) { 
+    background-color:#eee; 
+}
+table.cashflow tr:nth-child(even) { 
+    background-color:#fff; 
+}
+
+table.cashflow th, table.cashflow td {
+    padding: 1px;
+    border: 1px solid #808080;
+}
+
+table.cashflow th {
+    background-color: #aaa;
+}
+
+table.cashflow th.accountheader:hover, 
+table.cashflow td.xactionentry:hover,
+table.cashflow td.xactionname:hover,
+table.cashflow td.currentbal:hover,
+input.xactiondate:hover {
+    background-color: #E9F4FE;
+}
+
+table.cashflow td.currentname {
+    font-weight: bold;
+}
+
+table.cashflow td.value {
+    text-align: right;
+}
+
+table.cashflow td.xactiondate {
+    padding: 0;
+}
+
+input.xactiondate {
+    border: 0;
+    padding: 1px;
+    margin: 0;
+}
+
+
+/**
+ * Editor Styles
+ */
+div.editor {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #333;
+    -webkit-border-radius: 3px;
+    -webkit-border-top-left-radius: 0;
+    -moz-border-radius: 3px;
+    -moz-border-radius-topleft: 0;
+    border-radius: 3px;
+    border-top-left-radius: 0;
+}
+
+div.dialog {
+    position: absolute;
+    left: -1000px;
+}
+
+.dialogCalendar {
+    margin: 7px auto;
+}
+
+label {
+    display: inline-block;    
+    width: 60px;
+}
+
+input.accountname,
+input.accountbalance,
+input.xactionname,
+input.newxactiondate {
+    border: 1px solid #999;
+    padding: 1px;
+    background-color: #fff;
+}
+
+form input {
+    margin: 1px;
+}
