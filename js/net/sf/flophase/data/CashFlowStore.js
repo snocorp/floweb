@@ -6,13 +6,28 @@ dojo.require("net.sf.flophase.data.AccountStore");
 dojo.require("net.sf.flophase.data.TransactionStore");
 dojo.require("net.sf.flophase.model.CashFlow");
 
+/**
+ * CashFlowStore
+ *
+ * This class is a persistent object that allows the application to access and
+ * update the data.
+ */
 dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
+    /**
+     * Loads and stores the cashflow from the server. Gets the data
+     * asyncronously by first getting the accounts, then the historic
+     * transactions, then the upcoming transactions. Finally it updates the
+     * balances.
+     *
+     * @param options.success The function to invoke upon success. Takes a
+     *                        reference to the cashflow as an argument.
+     * @param options.error
+     */
     getCashFlow: function(options)  {
         var _this = this; //store a reference to this for use in the callback
-        this._options = options;
         this._cashflow = new net.sf.flophase.model.CashFlow();
 
-        options.date = new Date();
+        var currDate = new Date();
 
         var accountStore = new net.sf.flophase.data.AccountStore();
         var xactionStore = new net.sf.flophase.data.TransactionStore();
@@ -22,33 +37,44 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
                 _this.handleAccounts(accounts);
 
                 xactionStore.getTransactions({
-                    date: options.date,
+                    date: currDate,
                     historic: true,
                     success: function(xactions) {
                         _this.handleHistoricTransactions(xactions);
 
                         xactionStore.getTransactions({
-                            date: options.date,
+                            date: currDate,
                             historic: false,
                             success: function(xactions) {
                                 _this.handleUpcomingTransactions(xactions);
 
                                 _this.updateBalances(_this._cashflow);
 
-                                _this._options.success(_this._cashflow);
+                                options.success(_this._cashflow);
                             },
-                            error: _this._options.error
+                            error: options.error
                         });
                     },
-                    error: _this._options.error
+                    error: options.error
                 });
             },
             error: options.error
         });
     },
+    /**
+     * Handles the accounts sent from the server. Sets the cashflow's accounts.
+     *
+     * @param accounts The accounts sent from the server.
+     */
     handleAccounts: function(accounts) {
         this._cashflow.setAccounts(accounts);
     },
+    /**
+     * Handles historic transactions from the server. Adds these transactions to
+     * the current set of transactions and re-sorts them.
+     *
+     * @param xactions The transactions from the server.
+     */
     handleHistoricTransactions: function(xactions) {
         var origXactions = this._cashflow.getTransactions();
 
@@ -57,6 +83,12 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
 
         this._cashflow.setTransactions(xactions);
     },
+    /**
+     * Handles upcoming transactions from the server. Adds these transactions to
+     * the current set of transactions and re-sorts them.
+     *
+     * @param xactions The transactions from the server.
+     */
     handleUpcomingTransactions: function(xactions) {
         var origXactions = this._cashflow.getTransactions();
 
@@ -65,6 +97,16 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
 
         this._cashflow.setTransactions(xactions);
     },
+    /**
+     * Adds a new account to the cashflow.
+     *
+     * @param options.name The account name
+     * @param options.balance The current balance
+     * @param options.success The function to call upon success. Takes the new
+     *                        account as a parameter.
+     * @param options.error The function to call upon error, takes a single
+     *                      string parameter
+     */
     addAccount: function(options) {
         var _this = this; //store a reference to this for use in the callback
 
@@ -82,6 +124,14 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
             error: options.error
         });
     },
+    /**
+     * Deletes an existing account from the cashflow.
+     *
+     * @param options.key The account key
+     * @param options.success The function to call upon success
+     * @param options.error The function to call upon error, takes a single
+     *                      string parameter
+     */
     deleteAccount: function(options) {
         var _this = this; //store a reference to this for use in the callback
 
@@ -115,6 +165,17 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
             error: options.error
         });
     },
+    /**
+     * Edits an existing account. Updates one or both of the name and the
+     * balance. If the balance is updated, updates all balances.
+     *
+     * @param options.key The key of the account
+     * @param options.name The new name
+     * @param options.balance The new balance
+     * @param options.success The function to call upon success
+     * @param options.error The function to call upon error, takes a single
+     *                      string parameter
+     */
     editAccount: function(options) {
         var account = this._cashflow.getAccount(options.key);
 
@@ -134,6 +195,17 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
             error: options.error
         });
     },
+    /**
+     * Adds an entry to a transaction. Updates the balances.
+     *
+     * @param options.acctKey The key of the account
+     * @param options.xactionKey The key of the transaction
+     * @param options.amount The amount of the entry
+     * @param options.success The function to call upon success. Takes the new
+     *                        entry as a parameter.
+     * @param options.error The function to call upon error, takes a single
+     *                      string parameter
+     */
     addEntry: function(options) {
         var _this = this; //store a reference to this for use in the callback
 
@@ -153,6 +225,18 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
             error: options.error
         });
     },
+    /**
+     * Edits an entry amount. Updates the balances.
+     *
+     * @param options.key The key of the entry
+     * @param options.acctKey The key of the account
+     * @param options.xactionKey The key of the transaction
+     * @param options.amount The amount of the entry
+     * @param options.success The function to call upon success. Takes the new
+     *                        entry as a parameter.
+     * @param options.error The function to call upon error, takes a single
+     *                      string parameter
+     */
     editEntry: function(options) {
         var _this = this; //store a reference to this for use in the callback
 

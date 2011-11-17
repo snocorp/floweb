@@ -8,10 +8,104 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext.webapp import template
 
-from net.sf.flophase import model
-from net.sf.flophase import const
-from net.sf.flophase import store
-from net.sf.flophase import util
+"""response codes"""
+SUCCESS = 1
+FAILURE = 2
+
+class CashFlow(db.Model):
+    """Models a cash flow."""
+    user = db.UserProperty()
+
+class Account(db.Model):
+    """Models an account"""
+    name = db.StringProperty()
+    balance = db.FloatProperty()
+    order = db.IntegerProperty()
+
+class Transaction(db.Model):
+    """Models a transaction"""
+    name = db.StringProperty()
+    date = db.DateProperty()
+
+class Entry(db.Model):
+    """Models an entry in a transaction"""
+    account = db.ReferenceProperty()
+    amount = db.FloatProperty()
+
+class CashFlowStore():
+    """ Retrieves the cash flow model object """
+    def get(self):
+        """ Query to get the only cash flow """
+        cashFlowQuery = CashFlow.all()
+        cashFlowQuery.filter('user = ', users.get_current_user())
+        results = cashFlowQuery.fetch(limit=1)
+
+        """ if there is no cash flow """
+        if (len(results) == 0):
+            """ create a new one """
+            cashFlow = CashFlow()
+            cashFlow.user = users.get_current_user()
+            cashFlow.put()
+        else:
+            cashFlow = results[0]
+
+        return cashFlow
+
+class AccountStore():
+    """ gets the accounts for the given cash flow """
+    def getAccounts(self, cashFlow):
+        accountQuery = Account.all()
+        accountQuery.ancestor(cashFlow)
+        accountQuery.order("order")
+
+        """ limit to 5 accounts for now """
+        accounts = accountQuery.fetch(limit=5)
+
+        """ if there are no accounts """
+        if (len(accounts) == 0):
+            """ create a default empty account """
+            account = Account(parent=cashFlow)
+            account.name = 'My Account'
+            account.balance = 0.0
+            account.order = 1
+            account.put()
+
+            """ add it to the list for processing """
+            accounts.append(account)
+
+        return accounts
+
+class TransactionStore():
+    """ gets the transactions for the given cash flow """
+    def getTransactions(self, cashFlow, startDate, historic):
+        
+        """ query for the transactions """
+        xactionQuery = Transaction.all()
+        xactionQuery.ancestor(cashFlow)
+
+        if (historic):
+            """ include only transactions before start date in order """
+            xactionQuery.filter("date <", startDate)
+            xactionQuery.order("-date")
+        else:
+            xactionQuery.filter("date >=", startDate)
+            xactionQuery.order("date")
+
+        """ limit to 100 transactions per fetch """
+        xactions = xactionQuery.fetch(limit=100)
+
+        return xactions
+    
+
+    def getEntries(self, xaction):
+
+        """ query the entries for the given transaction """
+        entryQuery = Entry.all()
+        entryQuery.ancestor(xaction)
+        entries = entryQuery.fetch(limit=5)
+
+        return entries
+
 
 class MainPage(webapp.RequestHandler):
     """ Loads the main page of the application"""
@@ -46,20 +140,43 @@ class AccountCreator(webapp.RequestHandler):
         response = {}
         
         if users.get_current_user():        
-            cashFlow = store.CashFlowStore().get()
+            cashFlowQuery = CashFlow.all()
+            cashFlowQuery.filter('user = ', users.get_current_user())
+            results = cashFlowQuery.fetch(limit=1)
+
+            if (len(results) == 0):
+                cashFlow = CashFlow()
+                cashFlow.user = users.get_current_user()
+                cashFlow.put()
+            else:
+                cashFlow = results[0]
+
+            accountQuery = Account.all()
+            accountQuery.ancestor(cashFlow)
+            accountQuery.order("-order")
+            accounts = accountQuery.fetch(limit=1)
 
             """Create the new account"""
-            account = model.Account(parent=cashFlow)
+            account = Account(parent=cashFlow)
             account.name = self.request.get('name')
             account.balance = float(self.request.get('balance'))
-            account.order = store.AccountStore().getNextAccountOrder(cashFlow)
+            if (len(accounts) == 1):
+                """the last order plus one"""
+                account.order = accounts[0].order + 1
+            else:
+                account.order = 1
             account.put()
 
-            response["result"] = const.SUCCESS
+            response["result"] = SUCCESS
             response["message"] = "Account created"
-            response["account"] = util.JSONUtil().getAccount(account)
+            response["account"] = {
+                "key": str(account.key()),
+                "name": account.name,
+                "balance": account.balance,
+                "order": account.order
+            }
         else:
-            response["result"] = const.FAILURE
+            response["result"] = FAILURE
             response["message"] = "Permission denied"
 
         self.response.headers.add_header("Content-Type", "application/json")
@@ -77,11 +194,16 @@ class AccountEditor(webapp.RequestHandler):
                 account.balance = float(self.request.get('balance'))
             account.put()
 
-            response["result"] = const.SUCCESS
+            response["result"] = SUCCESS
             response["message"] = "Account updated"
-            response["account"] = util.JSONUtil().getAccount(account)
+            response["account"] = {
+                "key": str(account.key()),
+                "name": account.name,
+                "balance": account.balance,
+                "order": account.order
+            }
         else:
-            response["result"] = const.FAILURE
+            response["result"] = FAILURE
             response["message"] = "Permission denied"
 
         self.response.headers.add_header("Content-Type", "application/json")
@@ -95,7 +217,7 @@ class AccountRemover(webapp.RequestHandler):
             acctKey = self.request.get('key')
             account = db.get( acctKey )
 
-            entryQuery = model.Entry.all()
+            entryQuery = Entry.all()
             entryQuery.filter("account =", account)
             entries = entryQuery.fetch(limit=1000)
 
@@ -104,11 +226,11 @@ class AccountRemover(webapp.RequestHandler):
 
             account.delete()
 
-            response["result"] = const.SUCCESS
+            response["result"] = SUCCESS
             response["message"] = "Account removed"
             response["key"] = acctKey
         else:
-            response["result"] = const.FAILURE
+            response["result"] = FAILURE
             response["message"] = "Permission denied"
 
         self.response.headers.add_header("Content-Type", "application/json")
@@ -119,20 +241,24 @@ class AccountQuery(webapp.RequestHandler):
         response = {}
         
         if users.get_current_user():
-            cashFlow = store.CashFlowStore().get()
+            cashFlow = CashFlowStore().get()
 
-            accounts = store.AccountStore().getAccounts(cashFlow)
+            accounts = AccountStore().getAccounts(cashFlow)
 
             """ store the accounts in a json-friendly object """
             tmpAccounts = []
             for account in accounts:
-                tmpAccounts.append(util.JSONUtil().getAccount(account))
+                tmpAccounts.append({
+                    'key': str(account.key()),
+                    'name': account.name,
+                    'balance': account.balance
+                })
 
-            response["result"] = const.SUCCESS
+            response["result"] = SUCCESS
             response["accounts"] = tmpAccounts
 
         else:
-            response["result"] = const.FAILURE
+            response["result"] = FAILURE
             response["message"] = "Permission denied"
 
         self.response.headers.add_header("Content-Type", "application/json")
@@ -144,15 +270,24 @@ class TransactionCreator(webapp.RequestHandler):
         response = {}
 
         if users.get_current_user():  
-            cashFlow = store.CashFlowStore().get()
+            cashFlowQuery = CashFlow.all()
+            cashFlowQuery.filter('user = ', users.get_current_user())
+            results = cashFlowQuery.fetch(limit=1)
+
+            if (len(results) == 0):
+                cashFlow = CashFlow()
+                cashFlow.user = users.get_current_user()
+                cashFlow.put()
+            else:
+                cashFlow = results[0]
 
             """Create the new transaction"""
-            xaction = model.Transaction(parent=cashFlow)
+            xaction = Transaction(parent=cashFlow)
             xaction.name = self.request.get('name')
             xaction.date = datetime.datetime.strptime(self.request.get('date'), '%Y-%m-%d').date()
             xaction.put()
 
-            response['result'] = const.SUCCESS
+            response['result'] = SUCCESS
             response['message'] = "Transaction created"
             response['transaction'] = {
                 'key': str(xaction.key()),
@@ -161,7 +296,7 @@ class TransactionCreator(webapp.RequestHandler):
                 'entries': {}
             }
         else:
-            response['result'] = const.FAILURE
+            response['result'] = FAILURE
             response['message'] = "Permission denied"
 
         self.response.headers.add_header("Content-Type", "application/json")
@@ -179,7 +314,7 @@ class TransactionEditor(webapp.RequestHandler):
                 xaction.date = datetime.datetime.strptime(self.request.get('date'), '%Y-%m-%d').date()
             xaction.put()
 
-            response['result'] = const.SUCCESS
+            response['result'] = SUCCESS
             response['message'] = "Transaction updated"
             response['transaction'] = {
                 'key': str(xaction.key()),
@@ -187,7 +322,7 @@ class TransactionEditor(webapp.RequestHandler):
                 'date': xaction.date.strftime("%Y-%m-%d")
             }
         else:
-            response['result'] = const.FAILURE
+            response['result'] = FAILURE
             response['message'] = "Permission denied"
 
         self.response.headers.add_header("Content-Type", "application/json")
@@ -202,11 +337,11 @@ class TransactionRemover(webapp.RequestHandler):
             xaction = db.get( xactionKey )
             xaction.delete()
 
-            response['result'] = const.SUCCESS
+            response['result'] = SUCCESS
             response['message'] = "Transaction removed"
             response["key"] = xactionKey
         else:
-            response['result'] = const.FAILURE
+            response['result'] = FAILURE
             response['message'] = "Permission denied"
 
         self.response.headers.add_header("Content-Type", "application/json")
@@ -217,7 +352,7 @@ class TransactionQuery(webapp.RequestHandler):
         response = {}
 
         if users.get_current_user():
-            cashFlow = store.CashFlowStore().get()
+            cashFlow = CashFlowStore().get()
 
             historic = self.request.get('hist') == 'true'
             inputDate = self.request.get('date')
@@ -227,7 +362,7 @@ class TransactionQuery(webapp.RequestHandler):
                 startDate = datetime.datetime.today()
             
 
-            transactionStore = store.TransactionStore()
+            transactionStore = TransactionStore()
 
             tmpXactions = []
             xactions = transactionStore.getTransactions(cashFlow, startDate, historic)
@@ -246,11 +381,11 @@ class TransactionQuery(webapp.RequestHandler):
                     }
                 tmpXactions.append(tmpXaction)
 
-            response["result"] = const.SUCCESS
+            response["result"] = SUCCESS
             response["transactions"] = tmpXactions
             
         else:
-            response["result"] = const.FAILURE
+            response["result"] = FAILURE
             response["message"] = "Permission denied"
 
         self.response.headers.add_header("Content-Type", "application/json")
@@ -263,37 +398,31 @@ class EntryEditor(webapp.RequestHandler):
         if users.get_current_user():  
             value = db.get( self.request.get('key') )
             if isinstance(value, Account):
-                entry = model.Entry( db.get( self.request.get('xaction') ) )
+                entry = Entry( db.get( self.request.get('xaction') ) )
                 entry.account = value
             else:
                 entry = value
             entry.amount = float(self.request.get('amount'))
             entry.put()
 
-            response["result"] = const.SUCCESS
+            response["result"] = SUCCESS
             response['message'] = "Entry updated"
             response['entry'] = {
                 'key': str(entry.key()),
                 'amount': entry.amount
             }
         else:
-            response["result"] = const.FAILURE
+            response["result"] = FAILURE
             response['message'] = "Permission denied"
 
         self.response.headers.add_header("Content-Type", "application/json")
         self.response.out.write(json.dumps(response))
 
 application = webapp.WSGIApplication([
-    ('/', MainPage),
     ('/account/add', AccountCreator),
     ('/account/delete', AccountRemover),
     ('/account/edit', AccountEditor),
-    ('/account/q', AccountQuery),
-    ('/xaction/add', TransactionCreator),
-    ('/xaction/delete', TransactionRemover),
-    ('/xaction/edit', TransactionEditor),
-    ('/xaction/q', TransactionQuery),
-    ('/entry/edit', EntryEditor)
+    ('/account/q', AccountQuery)
 ], debug=True)
 
 

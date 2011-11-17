@@ -18,7 +18,7 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
 
         var table = document.createElement("table");
         table.id = 'cashFlowTable';
-        table.className = 'cashflow';
+        table.className = 'flo-cashflow';
 
         //create the header rows
         table.appendChild(this.createFirstHeaderRow(accounts));
@@ -72,6 +72,7 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
     createTransactionRow: function(transaction, accounts) {
         var xactionRow = document.createElement("tr");
         xactionRow.id = 'xaction_' + transaction.key;
+        xactionRow.className = 'flo-xaction';
 
         //the cell for the transactions name
         xactionRow.appendChild(this.createTransactionNameCell(transaction));
@@ -86,6 +87,7 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
                 key = entry.key;
                 value = entry.amount;
             } else {
+                key = null;
                 value = 0;
             }
 
@@ -115,7 +117,7 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
     createTransactionNameCell: function(transaction) {
         var xactionNameCell = document.createElement("td");
         xactionNameCell.id = 'name_' + transaction.key;
-        xactionNameCell.className = 'xactionname';
+        xactionNameCell.className = 'flo-xactionname';
 
         //when the user clicks the cell, it will become editable
         xactionNameCell.onclick = function(key, value) {return function(event) {
@@ -135,12 +137,7 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
         var xactionEntryCell = document.createElement("td");
         xactionEntryCell.id = 'entry_'+acctKey+'_'+xactionKey;
 
-        var key;
-        if (!entryKey) {
-            key = acctKey+'_'+xactionKey;
-        } else {
-            key = entryKey;
-        }
+        var key = entryKey ? entryKey : acctKey+'_'+xactionKey;
 
         var props = {
             id: 'entryInput_'+key,
@@ -182,6 +179,7 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
     createTransactionBalanceCell: function(xactionKey, accountKey, balance) {
         var xactionBalanceCell = document.createElement("td");
         xactionBalanceCell.id = 'balance_'+accountKey+'_'+xactionKey;
+        xactionBalanceCell.className = 'flo-xactionbalance';
 
         var balanceText = dojo.currency.format(balance, {currency:'USD'});
         xactionBalanceCell.appendChild(document.createTextNode(balanceText));
@@ -275,7 +273,8 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
         currentRow.appendChild(currentCell);
 
         var currentDateCell = document.createElement("td");
-        currentDateCell.appendChild(document.createTextNode(dojo.date.locale.format(new Date(), {selector:'date'})));
+        currentDateCell.id = 'currentDate';
+        currentDateCell.appendChild(document.createTextNode(dojo.date.locale.format(new Date(), {selector:'date',fullYear:true})));
         currentRow.appendChild(currentDateCell);
 
         for (var i in accounts) {
@@ -317,19 +316,21 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
         var currentCell = dojo.byId('current');
         currentCell.colSpan += 1;
 
-        //create the entries header cell
-        var accountHeader = document.createElement("th");
-        accountHeader.id = 'account_'+account.key;
-        accountHeader.className = 'accountheader';
-
-        //when the user clicks the cell, it will become editable
-        accountHeader.onclick = function(key, value) {return function(event) {
+        var clickHandler = function(key, value) {return function(event) {
             app.showEditAccount(
                     event,
                     this.id,
                     key,
                     value);
         }}(account.key, account.name);
+
+        //create the entries header cell
+        var accountHeader = document.createElement("th");
+        accountHeader.id = 'account_'+account.key;
+        accountHeader.className = 'accountheader';
+
+        //when the user clicks the cell, it will become editable
+        accountHeader.onclick = clickHandler;
 
         accountHeader.appendChild(document.createTextNode(account.name));
 
@@ -349,9 +350,15 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
             }
         }
 
-        //clone the entries header cell to create the balance cell
-        accountHeader = accountHeader.cloneNode(true);
+        //create the balance cell
+        accountHeader = document.createElement("th");
         accountHeader.id = 'accountbal_'+account.key;
+        accountHeader.className = 'accountheader';
+
+        //when the user clicks the cell, it will become editable
+        accountHeader.onclick = clickHandler;
+
+        accountHeader.appendChild(document.createTextNode(account.name));
 
         accountHeaderRow.appendChild(accountHeader);
 

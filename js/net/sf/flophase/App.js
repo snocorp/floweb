@@ -38,7 +38,7 @@ dojo.declare("net.sf.flophase.App", null, {
     },
     showAddAccount: function() {
         $('#newAccountName').val('');
-        dijit.byId('newAccountBalance').value = 0;
+        dijit.byId('newAccountBalance').value = 0.0;
         
         dijit.byId("addAccountDialog").show();
     },
@@ -202,7 +202,7 @@ dojo.declare("net.sf.flophase.App", null, {
         this.cashflowStore.deleteAccount({
            key: acctKey,
            success: function() {
-                _this.hideEditAccount();
+                _this.hideEditAccountName();
                 
                _this.grid.onAccountDelete(acctKey);
            },

@@ -2,9 +2,12 @@
     <head>
         <title>flophase</title>
         <link rel="stylesheet" href="css/reset.css"/>
+        <link rel="stylesheet" href="css/splash.css"/>
     </head>
-    <body>
-        <h1>flophase</h1>        
-        <p>Welcome to flophase. Please <a href="{{ url }}">{{ url_linktext }}</a>.</p>
+    <body class="claro">
+        <div id="splashContainer">
+            <h1>flophase</h1>
+            <button type="button" id="login" onclick="window.location = '{{ url }}';">{{ url_linktext }}</button>
+        </div>
     </body>
 </html>

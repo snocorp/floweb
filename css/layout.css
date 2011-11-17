@@ -1,9 +1,11 @@
 /**
  * Basic Layout Styles
+ * Scheme: http://colorschemedesigner.com/#3p21Tw0w0w0w0
  */
 body { 
     font-size: 62.5%;
     font-family: Helvetica, Arial, sans-serif;
+    background-color: #06799F;
 }
 
 /**
@@ -22,43 +24,54 @@ body {
 /**
  * Content Styles
  */
-table.cashflow {
-    border: 1px solid #ccc;
+table.flo-cashflow {
+    border: 1px solid #000;
+    margin-left: 2px;
 }
 
-table.cashflow tr:nth-child(odd) { 
+table.flo-cashflow tr:nth-child(odd) {
     background-color:#eee; 
 }
-table.cashflow tr:nth-child(even) { 
+table.flo-cashflow tr:nth-child(even) {
     background-color:#fff; 
 }
 
-table.cashflow th, table.cashflow td {
-    padding: 1px;
-    border: 1px solid #808080;
+table.flo-cashflow td {
+    padding: 0px;
+    border: 1px solid #000;
 }
 
-table.cashflow th {
-    background-color: #aaa;
+table.flo-cashflow th {
+    background-color: #FF8300;
+    color: #000;
+    padding: 2px;
+    border: 1px solid #000;
 }
 
-table.cashflow th.accountheader:hover, 
-table.cashflow td.xactionentry:hover,
-table.cashflow td.xactionname:hover,
-table.cashflow td.currentbal:hover,
+td.flo-xactionname, td.flo-xactionbalance, #current, #currentDate {
+    padding: 2px !important;
+}
+
+table.flo-cashflow th.accountheader:hover {
+    background-color: #3AAACF;
+}
+
+table.flo-cashflow td.xactionentry:hover,
+table.flo-cashflow td.flo-xactionname:hover,
+table.flo-cashflow td.currentbal:hover,
 input.xactiondate:hover {
-    background-color: #E9F4FE;
+    background-color: #3AAACF;
 }
 
-table.cashflow td.currentname {
+table.flo-cashflow td.currentname {
     font-weight: bold;
 }
 
-table.cashflow td.value {
+table.flo-cashflow td.value {
     text-align: right;
 }
 
-table.cashflow td.xactiondate {
+table.flo-cashflow td.xactiondate {
     padding: 0;
 }
 
