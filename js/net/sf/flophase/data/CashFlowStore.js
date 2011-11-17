@@ -170,8 +170,8 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
      * balance. If the balance is updated, updates all balances.
      *
      * @param options.key The key of the account
-     * @param options.name The new name
-     * @param options.balance The new balance
+     * @param options.name The new name, optional
+     * @param options.balance The new balance, optional
      * @param options.success The function to call upon success
      * @param options.error The function to call upon error, takes a single
      *                      string parameter
@@ -232,8 +232,8 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
      * @param options.acctKey The key of the account
      * @param options.xactionKey The key of the transaction
      * @param options.amount The amount of the entry
-     * @param options.success The function to call upon success. Takes the new
-     *                        entry as a parameter.
+     * @param options.success The function to call upon success. Takes the
+     *                        edited entry as a parameter.
      * @param options.error The function to call upon error, takes a single
      *                      string parameter
      */
@@ -256,6 +256,16 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
             error: options.error
         });
     },
+    /**
+     * Adds a transaction to the cashflow.
+     *
+     * @param options.name The name of the transaction
+     * @param options.date The date of the transaction
+     * @param options.success The function to invoke upon success. Takes the new
+     *                        new transaction as a parameter
+     * @param options.error The function to invoke upon error, takes a single
+     *                      string parameter
+     */
     addTransaction: function(options) {
         var _this = this; //store a reference to this for use in the callback
 
@@ -275,6 +285,14 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
             error: options.error
         });
     },
+    /**
+     * Deletes a transaction from the cashflow.
+     *
+     * @param options.key The transaction key
+     * @param options.success The function to invoke upon success
+     * @param options.error The function to invoke upon error, takes a single
+     *                      string parameter
+     */
     deleteTransaction: function(options) {
         var _this = this; //store a reference to this for use in the callback
 
@@ -298,6 +316,17 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
             error: options.error
         });
     },
+    /**
+     * Edits a transaction. Updates one or both of the name and date.
+     *
+     * @param options.key The key of the transaction
+     * @param options.name The new name, optional
+     * @param options.date The new date, optional
+     * @param options.success The function to call upon success. Takes the
+     *                        transaction as a parameter.
+     * @param options.error The function to call upon error, takes a single
+     *                      string parameter
+     */
     editTransaction: function(options) {
         var xaction = this._cashflow.getTransaction(options.key);
 
@@ -321,6 +350,11 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
             error: options.error
         });
     },
+    /**
+     * Updates the balances of all the transactions.
+     *
+     * @param cashflow The cashflow to be updated.
+     */
     updateBalances: function(cashflow) {
         var xactions = cashflow.getTransactions();
         var accounts = cashflow.getAccounts();
@@ -378,6 +412,12 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
             }
         }
     },
+    /**
+     * Sorts the given transaction based on their dates.
+     *
+     * @param a The first transaction
+     * @param b The second transaction
+     */
     _xactionSorter: function(a, b) {
         return (a.date > b.date) ? 1 : ((a.date < b.date) ? -1 : 0);
     }

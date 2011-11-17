@@ -8,11 +8,20 @@ dojo.require("net.sf.flophase.data.CashFlowStore");
 dojo.require("net.sf.flophase.model.CashFlow");
 
 dojo.declare("net.sf.flophase.ui.Grid", null, {
+    /**
+     * Initializes the grid and adds it to the given DOM node.
+     *
+     * @param options.cashflow The cashflow the will be represented by the grid
+     * @param srcNodeRef The id of the DOM node
+     */
     init: function(options, srcNodeRef) {
         var gridContainer = dojo.byId(srcNodeRef);
 
         gridContainer.appendChild(this.createTable(options.cashflow));
     },
+    /**
+     * Creates a table using the given cashflow as the model.
+     */
     createTable: function(cashflow) {
         var accounts = cashflow.getAccounts();
 
@@ -35,7 +44,6 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
 
         //add the current info row
         currentBody.appendChild(this.createCurrentRow(accounts));
-
         table.appendChild(currentBody);
 
         //create the upcoming table body
@@ -69,6 +77,12 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
 
         return table;
     },
+    /**
+     * Creates a row representing the given transaction.
+     *
+     * @param transaction The transaction for the row.
+     * @param accounts The list of accounts.
+     */
     createTransactionRow: function(transaction, accounts) {
         var xactionRow = document.createElement("tr");
         xactionRow.id = 'xaction_' + transaction.key;
@@ -114,6 +128,11 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
 
         return xactionRow;
     },
+    /**
+     * Creates a cell for the transaction name.
+     *
+     * @param transaction The transaction
+     */
     createTransactionNameCell: function(transaction) {
         var xactionNameCell = document.createElement("td");
         xactionNameCell.id = 'name_' + transaction.key;
@@ -133,6 +152,14 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
 
         return xactionNameCell;
     },
+    /**
+     * Creates a cell for a transaction entry.
+     *
+     * @param value The value of the entry
+     * @param xactionKey The key of the transaction
+     * @param acctKey The key of the account
+     * @param entryKey The key of the entry, optional
+     */
     createTransactionEntryCell: function(value, xactionKey, acctKey, entryKey) {
         var xactionEntryCell = document.createElement("td");
         xactionEntryCell.id = 'entry_'+acctKey+'_'+xactionKey;
@@ -158,6 +185,11 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
 
         return xactionEntryCell;
     },
+    /**
+     * Creates a cell for the transaction date.
+     *
+     * @param transaction The transaction
+     */
     createTransactionDateCell: function(transaction) {
         var xactionDateCell = document.createElement("td");
         xactionDateCell.id = 'date_'+transaction.key;
@@ -176,6 +208,13 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
 
         return xactionDateCell;
     },
+    /**
+     * Creates a cell for the transaction balance
+     *
+     * @param xactionKey The key of the transaction
+     * @param accountKey The key of the account
+     * @param balance The balance
+     */
     createTransactionBalanceCell: function(xactionKey, accountKey, balance) {
         var xactionBalanceCell = document.createElement("td");
         xactionBalanceCell.id = 'balance_'+accountKey+'_'+xactionKey;
@@ -186,6 +225,11 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
         
         return xactionBalanceCell;
     },
+    /**
+     * Creates a table row for the first part of the header.
+     *
+     * @param accounts The list of accounts
+     */
     createFirstHeaderRow: function(accounts) {
         var firstHeaderRow = document.createElement("tr");
 
@@ -215,6 +259,11 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
 
         return firstHeaderRow;
     },
+    /**
+     * Creates a table row for the second part of the header.
+     *
+     * @param accounts The list of accounts
+     */
     createSecondHeaderRow: function(accounts) {
         var secondHeaderRow = document.createElement("tr");
         secondHeaderRow.id = 'accountHeaderRow';
@@ -262,6 +311,11 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
 
         return secondHeaderRow;
     },
+    /**
+     * Creates a table row representing the current situation.
+     *
+     * @param accounts The list of accounts
+     */
     createCurrentRow: function(accounts) {
         var currentRow = document.createElement("tr");
         currentRow.id = 'currentRow';
@@ -283,6 +337,11 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
 
         return currentRow;
     },
+    /**
+     * Creates a cell for the current balance of an account.
+     *
+     * @param The account
+     */
     createCurrentBalanceCell: function(account) {
         var currentBalanceCell = document.createElement("td");
         currentBalanceCell.id = 'currbal_'+account.key;
@@ -306,6 +365,11 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
 
         return currentBalanceCell;
     },
+    /**
+     * This method is invokes when an account is added to the cashflow.
+     *
+     * @param account The account that was added.
+     */
     onAccountAdd: function(account) {
         var entriesHeader = dojo.byId('entriesHeader');
         entriesHeader.colSpan += 1;
