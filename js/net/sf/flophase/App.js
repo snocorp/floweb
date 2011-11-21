@@ -7,6 +7,14 @@ dojo.require("net.sf.flophase.ui.Userbar");
 dojo.require("net.sf.flophase.ui.Grid");
 
 dojo.declare("net.sf.flophase.App", null, {
+    /**
+     * Creates a new App
+     *
+     * @param options.toolbarNodeRef The id of the toolbar container
+     * @param options.logoutUrl
+     * @param options.userbarNodeRef The id of the userbar container
+     * @param options.gridNodeRef The id of the grid container
+     */
     constructor: function(options) {
         var _this = this; //store a reference to this
 
@@ -33,21 +41,33 @@ dojo.declare("net.sf.flophase.App", null, {
             }
         });        
     },
+    /**
+     * Gets the cashflow
+     */
     getCashflow: function() {
         return this.cashflow;
     },
+    /**
+     * Shows the add account dialog.
+     */
     showAddAccount: function() {
         $('#newAccountName').val('');
         dijit.byId('newAccountBalance').value = 0.0;
         
         dijit.byId("addAccountDialog").show();
     },
+    /**
+     * Shows the add transaction dialog.
+     */
     showAddTransaction: function() {
         $('#newTransactionName').val('');
         $('#newTransactionDate').val('');
 
         dijit.byId("addTransactionDialog").show();
     },
+    /**
+     * Shows the edit account popup.
+     */
     showEditAccount: function( event, acctHeaderCellNodeRef, acctKey, acctName ) {
         var _this = this; //store a reference to this
 
@@ -106,6 +126,9 @@ dojo.declare("net.sf.flophase.App", null, {
         $("body").unbind();
         $("body").click(this.hideEditAccountName);
     },
+    /**
+     * Shows the edit transaction popup.
+     */
     showEditTransaction: function( event, nameCellNodeRef, xactionKey, xactionName ) {
         var _this = this; //store a reference to this
 
@@ -156,18 +179,33 @@ dojo.declare("net.sf.flophase.App", null, {
         $("body").unbind();
         $("body").click(this.hideEditTransaction);
     },
+    /**
+     * Hides the add account dialog.
+     */
     hideAddAccount: function() {
         dijit.byId("addAccountDialog").hide();
     },
+    /**
+     * Hides the add transaction dialog.
+     */
     hideAddTransaction: function() {
         dijit.byId("addTransactionDialog").hide();
     },
+    /**
+     * Hides the edit account name popup.
+     */
     hideEditAccountName: function() {
         $("#accountEditor").fadeOut(250);
     },
+    /**
+     * Hides the edit transaction popup.
+     */
     hideEditTransaction: function() {
         $("#xactionEditor").fadeOut(250);
     },
+    /**
+     * Adds a new account.
+     */
     addAccount: function() {
         var _this = this; //store a reference to this
         
@@ -182,6 +220,9 @@ dojo.declare("net.sf.flophase.App", null, {
             error: function(message) { window.alert(message); }
         });
     },
+    /**
+     * Adds a transaction.
+     */
     addTransaction: function() {
         var _this = this; //store a reference to this
 
@@ -196,6 +237,11 @@ dojo.declare("net.sf.flophase.App", null, {
             error: function(message) { window.alert(message); }
         });
     },
+    /**
+     * Deletes an account.
+     *
+     * @param acctKey The key of the account.
+     */
     deleteAccount: function(acctKey) {
         var _this = this; //store a reference to this
 
@@ -211,6 +257,11 @@ dojo.declare("net.sf.flophase.App", null, {
            }
         });
     },
+    /**
+     * Deletes a transaction.
+     *
+     * @param xactionKey The key of the transaction.
+     */
     deleteTransaction: function(xactionKey) {
         var _this = this; //store a reference to this
 
@@ -226,6 +277,12 @@ dojo.declare("net.sf.flophase.App", null, {
             error: function(message) { window.alert(message); }
         })
     },
+    /**
+     * Edits the current balance of an account.
+     *
+     * @param acctKey The key of the account.
+     * @param balance The new balance.
+     */
     editAccountBalance: function(acctKey, balance) {
         var _this = this; //store a reference to this
 
@@ -238,6 +295,12 @@ dojo.declare("net.sf.flophase.App", null, {
             error: function(message) { window.alert(message); }
         });
     },
+    /**
+     * Edits the name of an account.
+     *
+     * @param acctKey The key of the account.
+     * @param name The new name.
+     */
     editAccountName: function(acctKey, name) {
         var _this = this; //store a reference to this
 
@@ -252,6 +315,14 @@ dojo.declare("net.sf.flophase.App", null, {
             error: function(message) { window.alert(message); }
         });
     },
+    /**
+     * Edits the amount of an entry.
+     *
+     * @param value The new amount.
+     * @param xactionKey The key of the transaction.
+     * @param acctKey The key of the account.
+     * @param entryKey The key of the entry, optional if entry exists.
+     */
     editEntryAmount: function(value, xactionKey, acctKey, entryKey) {
         var _this = this; //store a reference to this
 

@@ -3,6 +3,11 @@ dojo.provide("net.sf.flophase.ui.Toolbar");
 dojo.require("dijit.form.Button");
 
 dojo.declare("net.sf.flophase.ui.Toolbar", null, {
+    /**
+     * Initializes the toolbar and adds it to the given dome node.
+     * 
+     * @param srcNodeRef The id of the DOM node
+     */
     init: function(srcNodeRef) {
         // Create add account button
         this._addAccountButton = new dijit.form.Button({

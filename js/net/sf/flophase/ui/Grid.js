@@ -366,20 +366,24 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
         return currentBalanceCell;
     },
     /**
-     * This method is invokes when an account is added to the cashflow.
+     * This method is invoked when an account is added to the cashflow.
      *
      * @param account The account that was added.
      */
     onAccountAdd: function(account) {
+        //increase the span of the entries header
         var entriesHeader = dojo.byId('entriesHeader');
         entriesHeader.colSpan += 1;
 
+        //increase the span of the balance header
         var balanceHeader = dojo.byId('balanceHeader');
         balanceHeader.colSpan += 1;
 
+        //increatease the span of the "current" cell
         var currentCell = dojo.byId('current');
         currentCell.colSpan += 1;
 
+        //create a function to handle clicks on the account cell
         var clickHandler = function(key, value) {return function(event) {
             app.showEditAccount(
                     event,
@@ -396,6 +400,7 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
         //when the user clicks the cell, it will become editable
         accountHeader.onclick = clickHandler;
 
+        //add the account name to the cell
         accountHeader.appendChild(document.createTextNode(account.name));
 
         //the header row has account cells for entries and balances so we need
@@ -422,6 +427,7 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
         //when the user clicks the cell, it will become editable
         accountHeader.onclick = clickHandler;
 
+        //add the account name to the cell
         accountHeader.appendChild(document.createTextNode(account.name));
 
         accountHeaderRow.appendChild(accountHeader);
@@ -454,6 +460,11 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
             }
         }
     },
+    /**
+     * This method is invoked when an account is deleted from the cashflow.
+     *
+     * @param account The key of the account that was deleted.
+     */
     onAccountDelete: function(acctKey) {
         //remove the account headers
         $('#account_'+acctKey).remove();
@@ -479,6 +490,11 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
         //remove all balances for the account
         $('td[id^="balance_'+acctKey+'"]').remove();
     },
+    /**
+     * This method is invoked when an account is updated.
+     *
+     * @param account The account that was updated.
+     */
     onAccountUpdate: function(account) {
         var accountHeader = dojo.byId('account_'+account.key);
         accountHeader.onclick = function(key, value) {return function(event) {
@@ -506,6 +522,13 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
             accountHeader.firstChild
         );
     },
+    /**
+     * This method is invoked when an entry is edited.
+     *
+     * @param entry The entry that was edited
+     * @param acctKey The key of the account for the entry
+     * @param xactionKey The key of the transaction for the entry
+     */
     onEntryEdit: function(entry, acctKey, xactionKey) {
         var entryInput = dijit.byId('entryInput_'+acctKey+'_'+xactionKey);
         if (entryInput) {
@@ -520,11 +543,20 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
                 }
             };}(entry.amount, xactionKey, acctKey, entry.key);
     },
+    /**
+     * This method is invoked when any changes happen to the balances.
+     *
+     * @param transactions Array of transactions
+     * @param account The account that was changed, optional if all were changed
+     */
     onBalanceUpdate: function(transactions, account) {
         for (var i in transactions) {
+            //if there are balances to be displayed
             if (transactions[i].balances) {
                 var xactionBalanceCell;
                 var balance;
+
+                //if an account was provided, only update balances for that account
                 if (account) {
                     xactionBalanceCell = dojo.byId('balance_'+account.key+'_'+transactions[i].key);
                     balance = dojo.currency.format(transactions[i].balances[account.key], {currency:'USD'});
@@ -545,8 +577,15 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
             }
         }
     },
+    /**
+     * This method is invoked when a transaction is added.
+     *
+     * @param xaction The transaction that was added
+     */
     onTransactionAdd: function(xaction) {
+        //get the current list of accounts
         var accounts = app.getCashflow().getAccounts();
+
         var xactionRow = this.createTransactionRow(xaction, accounts);
 
         var found = false;
@@ -571,11 +610,21 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
             tbody.appendChild(xactionRow);
         }
     },
+    /**
+     * This method is invoked when a transaction is deleted.
+     *
+     * @param xaction The key of the transaction that was deleted
+     */
     onTransactionDelete: function(xactionKey) {
         var xactionRow = dojo.byId('xaction_'+xactionKey);
 
         xactionRow.parentNode.removeChild(xactionRow);
     },
+    /**
+     * This method is invoked when a transaction is updated
+     *
+     * @param xaction The transaction that was updated
+     */
     onTransactionUpdate: function(xaction) {
         //ensure the name is up to date
         var xactionNameCell = dojo.byId('name_'+xaction.key);
@@ -606,7 +655,9 @@ dojo.declare("net.sf.flophase.ui.Grid", null, {
             }
         }
 
+        //if the position wasn't found'
         if (!found) {
+            //put the transaction at the end
             tbody.appendChild(xactionRow);
         }
     }
