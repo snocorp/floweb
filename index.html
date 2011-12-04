@@ -8,6 +8,7 @@
 
         <!-- https://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.js" type="text/javascript"></script>
+        <script src="js/jquery.jmNotify.js" type="text/javascript"></script>
 
         <!-- Configure Dojo -->
         <script>
@@ -46,19 +47,43 @@
             <button dojoType="dijit.form.Button" type="button" id="xactionDelete" class="deletebutton">Delete</button>
         </div>
         <div id="addAccountDialog" dojoType="dijit.Dialog" title="Add Account" class="dialog">
-            <label for="newAccountName">Name:</label><input class="accountname" type="text" id="newAccountName" name="newAccountName" dojoType="dijit.form.TextBox"/><br/>
-            <label for="newAccountBalance">Balance:</label><input class="accountbalance" type="text" id="newAccountBalance" name="newAccountBalance" dojoType="dijit.form.CurrencyTextBox" required="true" currency="USD" value="0"/><br/>
-            <br/>
-            <button dojoType="dijit.form.Button" type="button" onclick="app.addAccount();">OK</button>
-            <button dojoType="dijit.form.Button" type="button" onclick="app.hideAddAccount();">Cancel</button>
+            <label for="newAccountName">Name:</label>
+            <input
+                class="accountname"
+                type="text"
+                id="newAccountName"
+                name="newAccountName"
+                dojoType="dijit.form.ValidationTextBox"
+                required="true"/><br/>
+            <label for="newAccountBalance">Balance:</label>
+            <input
+                class="accountbalance"
+                type="text"
+                id="newAccountBalance"
+                name="newAccountBalance"
+                dojoType="dijit.form.CurrencyTextBox"
+                required="true"
+                currency="USD"
+                value="0"/><br/>
+            <div id="addAccountError" class="flo-dialog-error" style="display:none;"></div>
+            <div class="flo-dialog-buttonbar">
+                <button dojoType="dijit.form.Button" type="button" onclick="app.addAccount();">OK</button>
+                <button dojoType="dijit.form.Button" type="button" onclick="app.hideAddAccount();">Cancel</button>
+            </div>
         </div>
         <div id="addTransactionDialog" dojoType="dijit.Dialog" title="Add Transaction" class="dialog">
             <label for="newTransactionName">Description:</label><input class="xactionname" type="text" id="newTransactionName" name="name" dojoType="dijit.form.TextBox"/><br/>
             <input type="hidden" id="newTransactionDate" name="date" value="{{ current_date }}"/>
             <div dojoType="dijit.Calendar" class="dialogCalendar" onChange="dojo.byId('newTransactionDate').value=dojo.date.stamp.toISOString(arguments[0], {selector: 'date'});"></div>
-            <br/>
-            <button dojoType="dijit.form.Button" type="button" onclick="app.addTransaction();">OK</button>
-            <button dojoType="dijit.form.Button" type="button" onclick="app.hideAddTransaction();">Cancel</button>
+            <div id="addTransactionError" class="flo-dialog-error" style="display:none;"></div>
+            <div class="flo-dialog-buttonbar">
+                <button dojoType="dijit.form.Button" type="button" onclick="app.addTransaction();">OK</button>
+                <button dojoType="dijit.form.Button" type="button" onclick="app.hideAddTransaction();">Cancel</button>
+            </div>
+        </div>
+        <div id="notification" class="flo-notification" style="display: none;">
+            <span id="notificationMsg"></span>
+            <a class="jm-close" href="#"></a>
         </div>
     </body>
     <script type="text/javascript">

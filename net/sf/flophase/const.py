@@ -1,3 +1,5 @@
 """response codes"""
 SUCCESS = 1
 FAILURE = 2
+
+MAX_ACCOUNT_NAME_LENGTH = 30

@@ -49,11 +49,11 @@ dojo.declare("net.sf.flophase.data.AccountStore", null, {
                 if (jsonData.result == 1) { //SUCCESS
                     options.success(jsonData.account);
                 } else {
-                    options.error(jsonData.message);
+                    options.error(jsonData.messages);
                 }
             },
             error: function() {
-                options.error("Unable to add account.");
+                options.error(["Unable to add account."]);
             }
         });
     },

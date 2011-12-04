@@ -7,3 +7,10 @@ class JSONUtil():
             "balance": account.balance,
             "order": account.order
         }
+
+def is_numeric(val):
+    try:
+        float(val)
+    except ValueError, e:
+        return False
+    return True

@@ -13,6 +13,15 @@ handlers:
 - url: /js
   static_dir: js
 
+- url: /account/.*
+  script: net/sf/flophase/account.py
+
+- url: /entry/.*
+  script: net/sf/flophase/entry.py
+
+- url: /xaction/.*
+  script: net/sf/flophase/xaction.py
+
 - url: /.*
   script: flophase.py
 

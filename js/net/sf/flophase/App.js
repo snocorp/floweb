@@ -51,6 +51,10 @@ dojo.declare("net.sf.flophase.App", null, {
      * Shows the add account dialog.
      */
     showAddAccount: function() {
+        //hide any existing errors
+        $('#addAccountError').hide();
+
+        //reset the values
         $('#newAccountName').val('');
         dijit.byId('newAccountBalance').value = 0.0;
         
@@ -204,20 +208,44 @@ dojo.declare("net.sf.flophase.App", null, {
         $("#xactionEditor").fadeOut(250);
     },
     /**
+     * Displays one or more error messages in an error container.
+     *
+     * @param srcNodeRef The id of the error container.
+     * @param messages The array of messages to be displayed.
+     */
+    showErrorInDialog: function(srcNodeRef, messages) {
+        var errorContainer = $('#'+srcNodeRef);
+
+        errorContainer.empty();
+
+        if (messages.length == 1) {
+            errorContainer.text(messages[0]);
+        } else if (messages.length > 1) {
+            errorContainer.append("<ul></ul>");
+
+            var list = $('#'+srcNodeRef+' ul');
+            for (var i in messages) {
+                list.append('<li>'+messages[i]+'</li>');
+            }
+        }
+
+        errorContainer.show();
+    },
+    /**
      * Adds a new account.
      */
     addAccount: function() {
         var _this = this; //store a reference to this
-        
-        this.hideAddAccount();
 
         this.cashflowStore.addAccount({
             name: $("#newAccountName").val(),
             balance: dijit.byId("newAccountBalance").value,
             success: function(account) {
+                _this.hideAddAccount();
+
                 _this.grid.onAccountAdd(account);
             },
-            error: function(message) { window.alert(message); }
+            error: function(messages) { _this.showErrorInDialog('addAccountError', messages); }
         });
     },
     /**
@@ -326,6 +354,7 @@ dojo.declare("net.sf.flophase.App", null, {
     editEntryAmount: function(value, xactionKey, acctKey, entryKey) {
         var _this = this; //store a reference to this
 
+        //if the entry already exists
         if (entryKey) {
             this.cashflowStore.editEntry({
                 key: entryKey,
@@ -341,7 +370,9 @@ dojo.declare("net.sf.flophase.App", null, {
                 },
                 error: function(message) { window.alert(message); }
             })
-        } else {
+        } 
+        //if the entry is new
+        else {
             this.cashflowStore.addEntry({
                 acctKey: acctKey,
                 xactionKey: xactionKey,
@@ -357,6 +388,13 @@ dojo.declare("net.sf.flophase.App", null, {
             });
         }
     },
+    /**
+     * Edits the date of the transaction.
+     *
+     * @param xactionKey The key of the transaction
+     * @param newDate The new date of the transaction
+     * @param origDate The original date of the transaction
+     */
     editTransactionDate: function(xactionKey, newDate, origDate) {
         var _this = this; //store a reference to this
 
@@ -373,6 +411,11 @@ dojo.declare("net.sf.flophase.App", null, {
             });
         }
     },
+    /**
+     * Edits the name of the transaction
+     *
+     * @param xactionKey The key of the transaction
+     */
     editTransactionName: function(xactionKey) {
         this.hideEditTransaction();
 
@@ -382,5 +425,13 @@ dojo.declare("net.sf.flophase.App", null, {
             success: this.grid.onTransactionUpdate,
             error: function(message) { window.alert(message); }
         });
+    },
+    /**
+     * Pops up a notification.
+     */
+    notify: function(message) {
+        $('#notificationMsg').empty().append(message);
+
+        $('#notification').jmNotify();
     }
 });

@@ -104,8 +104,8 @@ dojo.declare("net.sf.flophase.data.CashFlowStore", null, {
      * @param options.balance The current balance
      * @param options.success The function to call upon success. Takes the new
      *                        account as a parameter.
-     * @param options.error The function to call upon error, takes a single
-     *                      string parameter
+     * @param options.error The function to call upon error, takes a array of
+     *                      strings
      */
     addAccount: function(options) {
         var _this = this; //store a reference to this for use in the callback
